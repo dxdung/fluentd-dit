@@ -1,0 +1,59 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: fluentd-dit-v0.14.12
+  labels:
+    k8s-app: fluentd-dit
+spec:
+  template:
+    metadata:
+      namespace: ingestion
+      labels:
+        k8s-app: fluentd-dit
+    spec:
+      containers:
+      - name: fluentd-dit
+        image: dxdung/fluentd-dit:0.14.12
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: 1024Mi
+            cpu: 1000m
+          requests:
+            memory: 512Mi
+            cpu: 512m
+        volumeMounts:
+          - name: var-log
+            mountPath: /var/log
+          - name: var-log-journal
+            mountPath: /var/log/journal
+            readOnly: true
+          - name: var-lib-docker-containers
+            mountPath: /var/lib/docker/containers
+            readOnly: true
+          - name: var-log-containers
+            mountPath: /var/log/containers
+            readOnly: true
+        env:
+          - name: AWS_KEY_ID
+            value: ""
+          - name: AWS_SECRET_KEY
+            value: ""
+          - name: AWS_REGION
+            value: "us-west-1"
+          - name: STREAM_NAME
+            value: "ingestion-stream-test"
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: var-log
+        hostPath:
+          path: /var/log
+      - name: var-log-journal
+        hostPath:
+          path: /var/log/journal
+      - name: var-lib-docker-containers
+        hostPath:
+          path: /var/lib/docker/containers
+      - name: var-log-containers
+        hostPath:
+          path: /var/log/containers
